@@ -1,11 +1,11 @@
 import { createInterface, type Interface } from "readline";
 import { getCommands } from "./command.js";
-import { PokeAPI } from "./pokeapi.js";
+import { PokeAPI, Pokemon } from "./pokeapi.js";
 
 export type CLICommand = {
   name: string;
   description: string;
-  callback: (state: State) => Promise<void>;
+  callback: (state: State, ...arg: string[]) => Promise<void>;
 };
 
 export type State = {
@@ -14,9 +14,12 @@ export type State = {
   pokeapi: PokeAPI;
   nextlocations: string;
   prevlocations: string;
+  user: {
+    pokedex: Record<string, Pokemon>; 
+  }
 };
 
-export function initState() {
+export function initState(interval: number = 1000 * 10) {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -27,8 +30,9 @@ export function initState() {
   return {
     readline: rl,
     commands: commands,
-    pokeapi: new PokeAPI(),
+    pokeapi: new PokeAPI(interval),
     nextlocations: "",
     prevlocations: "",
-  };
+    user: { pokedex: {} },
+  } satisfies State;
 }

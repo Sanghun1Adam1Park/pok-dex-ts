@@ -1,19 +1,23 @@
-import { Cache, CacheEntry } from "./pokecache.js";
+import { Cache } from "./pokecache.js";
 
 export class PokeAPI {
   private static readonly baseURL = "https://pokeapi.co/api/v2";
   #cache: Cache; 
 
-  constructor() {
-    this.#cache = new Cache(1000 * 10);
+  constructor(cacheInterval: number) {
+    this.#cache = new Cache(cacheInterval);
+  }
+
+  closeCache() {
+    this.#cache.stopReapLoop();
   }
 
   async fetchLocations(pageURL?: string): Promise<ShallowLocations> {
     const url = pageURL || `${PokeAPI.baseURL}/location-area`;
-    const cache: CacheEntry<ShallowLocations> | undefined = this.#cache.get(url);
 
-    if (cache !== undefined) {
-      return cache.val;
+    const cached = this.#cache.get<ShallowLocations>(url);
+    if (cached) {
+      return cached;
     }
 
     try {
@@ -33,10 +37,10 @@ export class PokeAPI {
 
   async fetchLocation(locationName: string): Promise<Location> {
     const url = `${PokeAPI.baseURL}/location-area/${locationName}`;
-    const cache: CacheEntry<Location> | undefined = this.#cache.get(url);
 
-    if (cache !== undefined) {
-      return cache.val;
+    const cached = this.#cache.get<Location>(url);
+    if (cached) {
+      return cached;
     }
 
     try {
@@ -52,6 +56,31 @@ export class PokeAPI {
     } catch (e) {
       throw new Error(
         `Error fetching location '${locationName}': ${(e as Error).message}`,
+      );
+    }
+  }
+
+  async fetchPokemon(pokemonName: string): Promise<Pokemon> {
+    const url = `${PokeAPI.baseURL}/pokemon/${pokemonName}/`;
+
+    const cached = this.#cache.get<Pokemon>(url);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const resp = await fetch(url);
+
+      if (!resp.ok) {
+        throw new Error(`${resp.status} ${resp.statusText}`);
+      }
+
+      const location: Pokemon = await resp.json();
+      this.#cache.add(url, location);
+      return location;
+    } catch (e) {
+      throw new Error(
+        `Error fetching pokemon '${pokemonName}': ${(e as Error).message}`
       );
     }
   }
@@ -119,3 +148,13 @@ export type Location = {
     }[];
   }[];
 };
+
+export type Pokemon = {
+  id: number
+  name: string
+  base_experience: number
+  height: number
+  is_default: boolean
+  order: number
+  weight: number
+}
