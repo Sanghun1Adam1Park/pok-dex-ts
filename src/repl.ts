@@ -1,27 +1,36 @@
-import { initState } from './state.js';
+import { State } from "./state.js";
 
-const state = initState()
+export async function startREPL(state: State) {
+  state.readline.prompt();
 
-export function startREPL() {
-  state.rl_interface.setPrompt("Pokedex > ");
-  state.rl_interface.prompt();
-  const commands = state.commands;
-  state.rl_interface.on("line", (input) => {
-    if (input !== '') {
-      const inputs: string[] = cleanInput(input);
-      commands[inputs[0]]?.callback(state);
-      state.rl_interface.prompt();
-    } else {
-      state.rl_interface.prompt();
+  state.readline.on("line", async (input) => {
+    const words = cleanInput(input);
+    if (words.length === 0) {
+      state.readline.prompt();
+      return;
     }
-  })
+
+    const commandName = words[0];
+
+    const cmd = state.commands[commandName];
+    if (!cmd) {
+      console.log(
+        `Unknown command: "${commandName}". Type "help" for a list of commands.`,
+      );
+      state.readline.prompt();
+      return;
+    }
+
+    try {
+      await cmd.callback(state);
+    } catch (e) {
+      console.log((e as Error).message);
+    }
+
+    state.readline.prompt();
+  });
 }
 
-/**
- * Split the user's input into lowercased "words" based on whitespace.
- * 
- * @param input user's input. 
- */
 export function cleanInput(input: string): string[] {
   return input
     .toLowerCase()

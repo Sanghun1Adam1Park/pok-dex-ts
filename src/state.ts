@@ -1,15 +1,19 @@
 import { createInterface, type Interface } from "readline";
 import { getCommands } from "./command.js";
+import { PokeAPI } from "./pokeapi.js";
 
 export type CLICommand = {
   name: string;
   description: string;
-  callback: (state: State) => void;
+  callback: (state: State) => Promise<void>;
 };
 
 export type State = {
-  rl_interface: Interface;
+  readline: Interface;
   commands: Record<string, CLICommand>;
+  pokeapi: PokeAPI;
+  nextlocations: string;
+  prevlocations: string;
 };
 
 export function initState() {
@@ -17,9 +21,14 @@ export function initState() {
     input: process.stdin,
     output: process.stdout,
   });
+
   const commands = getCommands();
+
   return {
-    rl_interface: rl,
+    readline: rl,
     commands: commands,
+    pokeapi: new PokeAPI(),
+    nextlocations: "",
+    prevlocations: "",
   };
 }
