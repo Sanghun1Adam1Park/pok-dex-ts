@@ -1,0 +1,29 @@
+{
+  "name": "pokedex-ts",
+  "version": "1.0.0",
+  "description": "CLI Repl which allows you to interact with PokèAPI built in Typescript.",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/main.js",
+    "dev": "npx tsc && node dist/main.js",
+    "test": "vitest --run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sanghun1Adam1Park/pok-dex-ts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sanghun1Adam1Park/pok-dex-ts/issues"
+  },
+  "homepage": "https://github.com/Sanghun1Adam1Park/pok-dex-ts#readme",
+  "devDependencies": {
+    "@types/node": "^24.0.12",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "type": "module"
+}
